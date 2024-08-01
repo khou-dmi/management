@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo img {
+            max-width: 100px; /* Adjust the logo size as needed */
+        }
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+            text-align: left;
+            max-width: 800px; /* Fixed width for the form */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        form label {
+            flex: 1 0 150px;
+            margin-right: 10px;
+            text-align: right;
+        }
+        form input, form select {
+            flex: 1 0 200px;
+            padding: 10px;
+            margin: 5px 0 10px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            margin: 10px 0;
+            flex: 1 0 200px;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        table {
+            width: 1000px; /* Increased width for the table */
+            border-collapse: collapse;
+            margin: 0 auto 20px auto; /* Center the table */
+        }
+        table, th, td {
+            border: 1px solid #000;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .total-price {
+            margin-top: 20px;
+            font-size: 1.2em;
+            max-width: 1000px; /* Match the width of the table */
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="logo">
+    <img src="https://lh3.googleusercontent.com/d/1A4I4Y8Z2oZE8lxVrfpLSvIKdqE58_Z7u" alt="Company Logo">
+</div>
+
+<h1>Order Management</h1>
+
+<form id="orderForm">
+    <label for="orderId">Order ID:</label>
+    <input type="text" id="orderId" name="orderId" required>
+
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="phone">Phone:</label>
+    <input type="tel" id="phone" name="phone" required placeholder="(123) 456-7890">
+
+    <label for="address">Shipping Address:</label>
+    <input type="text" id="address" name="address" required>
+
+    <label for="date">Date:</label>
+    <input type="date" id="date" name="date" required>
+
+    <label for="price">Price:</label>
+    <input type="number" id="price" name="price" required>
+
+    <label for="paymentStatus">Payment Status:</label>
+    <select id="paymentStatus" name="paymentStatus" required>
+        <option value="Paid">Paid</option>
+        <option value="Pending">Pending</option>
+        <option value="Overdue">Overdue</option>
+    </select>
+
+    <label for="returnStatus">Return:</label>
+    <select id="returnStatus" name="returnStatus" required>
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+    </select>
+
+    <button type="submit">Add Order</button>
+</form>
+
+<h2>Orders List</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Order ID</th>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Shipping Address</th>
+            <th>Date</th>
+            <th>Price</th>
+            <th>Payment Status</th>
+            <th>Return</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="ordersTable">
+        <!-- Orders will be listed here -->
+    </tbody>
+</table>
+
+<div class="total-price">
+    <strong>Total Price: $<span id="totalPrice">0.00</span></strong>
+</div>
+
+<script>
+    const orderForm = document.getElementById('orderForm');
+    const ordersTable = document.getElementById('ordersTable');
+    const totalPriceElement = document.getElementById('totalPrice');
+
+    let totalPrice = 0;
+
+    orderForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const orderId = document.getElementById('orderId').value;
+        const name = document.getElementById('name').value;
+        const phone = document.getElementById('phone').value;
+        const address = document.getElementById('address').value;
+        const date = document.getElementById('date').value;
+        const price = parseFloat(document.getElementById('price').value);
+        const paymentStatus = document.getElementById('paymentStatus').value;
+        const returnStatus = document.getElementById('returnStatus').value;
+
+        addOrder(orderId, name, phone, address, date, price, paymentStatus, returnStatus);
+    });
+
+    function addOrder(orderId, name, phone, address, date, price, paymentStatus, returnStatus) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${orderId}</td>
+            <td>${name}</td>
+            <td>${formatPhoneNumber(phone)}</td>
+            <td>${address}</td>
+            <td>${date}</td>
+            <td>${price.toFixed(2)}</td>
+            <td>${paymentStatus}</td>
+            <td>${returnStatus}</td>
+            <td>
+                <button onclick="editOrder(this)">Edit</button>
+                <button onclick="deleteOrder(this)">Delete</button>
+            </td>
+        `;
+        ordersTable.appendChild(row);
+
+        totalPrice += price;
+        updateTotalPrice();
+
+        orderForm.reset();
+    }
+
+    function editOrder(button) {
+        const row = button.parentElement.parentElement;
+        const orderId = row.cells[0].innerText;
+        const name = row.cells[1].innerText;
+        const phone = row.cells[2].innerText;
+        const address = row.cells[3].innerText;
+        const date = row.cells[4].innerText;
+        const price = parseFloat(row.cells[5].innerText);
+        const paymentStatus = row.cells[6].innerText;
+        const returnStatus = row.cells[7].innerText;
+
+        document.getElementById('orderId').value = orderId;
+        document.getElementById('name').value = name;
+        document.getElementById('phone').value = phone;
+        document.getElementById('address').value = address;
+        document.getElementById('date').value = date;
+        document.getElementById('price').value = price;
+        document.getElementById('paymentStatus').value = paymentStatus;
+        document.getElementById('returnStatus').value = returnStatus;
+
+        totalPrice -= price;
+        updateTotalPrice();
+
+        ordersTable.removeChild(row);
+    }
+
+    function deleteOrder(button) {
+        const row = button.parentElement.parentElement;
+        const price = parseFloat(row.cells[5].innerText);
+
+        totalPrice -= price;
+        updateTotalPrice();
+
+        ordersTable.removeChild(row);
+    }
+
+    function updateTotalPrice() {
+        totalPriceElement.textContent = totalPrice.toFixed(2);
+    }
+
+    function formatPhoneNumber(phoneNumber) {
+        // Basic phone number formatting function
+        // Adjust according to your format requirement
+        return phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+    }
+</script>
+
+</body>
+</html>
